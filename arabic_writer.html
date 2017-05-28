@@ -1,0 +1,833 @@
+﻿<!DOCTYPE HTML>
+<!--
+Author:             Omar Muhammad
+Email:              admin@omar84.com
+Website:            http://omar84.com
+Program:            The Arabic Writer - الكاتب العربي
+Version:            1.4.4
+Release Date:       2015-07-14
+Project Page:       https://github.com/omar84/arabic_writer
+Download Page:      http://www.softpedia.com/get/Office-tools/Text-editors/Arabic-Writer.shtml
+Project Article:    http://www.codeproject.com/KB/codegen/The_Arabic_Writer.aspx
+Unicode Chars:      http://www.isthisthingon.org/unicode/allchars1.php
+Licence:            GPL: General Public Licence
+Change Log:         added support for urdu and kurdish characters
+test string1:      السلام عليكم اخي العزيز how are you ان شاء الله بخير .. ما شفناك من 2007 شو عم تعمل؟؟
+test string2:      ذَلِكَ الْكِتَابُ لاَ رَيْبَ فِيهِ هُدًى لِّلْمُتَّقِينَ
+
+to-do:
+
+ڠ ‍ڠ ڠ‍‍ ڠ
+ڽ  پـ  ـپـ  ـڽ  nyaa
+ـۏ x ۏ    ۏ  vaaa
+
+ں
+ﮞ ﮟ
+ێ
+ە
+ڵ
+ڕ
+
+
+-->
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <title>Arabic Writer 1.4.4 الكاتب العربي</title>
+<script type="text/javascript">
+<!--
+//default Values:
+var defLang="en";      //set default language:  ["ar":arabic, "fa":farsi, "en":english]
+var defNumbs=defLang;  //set default language:  ["ar":arabic, "fa":farsi, "en":english]
+var e_harakat=1;       //enable/disable arabic harakat: [0, 1]
+var dir="rtl";
+var numbers = {
+  ar: "٠١٢٣٤٥٦٧٨٩",
+  fa: "۰۱۲۳۴۵۶۷۸۹",
+  en: "0123456789"
+}
+var outputNumbers = numbers[defLang];
+
+//initialize global vars:
+var y="";        
+var g;
+var old="";
+var tstr="";
+var csr1=csr2=0;    //cursor location
+var laIndex=8*48;   //position of laa characters in the unicode string
+
+var left="ٹہےگڤچپـئظشسيبلتنمكطضصثقفغعهخحج";                           //defining letters that can connect from the left
+var right="ٹہےڈڑگڤژچپـئؤرلالآىآةوزظشسيبللأاأتنمكطضصثقفغعهخحجدذلإإۇۆۈ";    //defining letters that can connect from the right
+
+var harakat="ًٌٍَُِّْ";                         //defining the harakat
+var symbols="ـ.،؟ @#$%^&*-+|\/=~,:";    //defining other symbols
+var unicode=
+"ﺁ ﺁ ﺂ ﺂ "+"ﺃ ﺃ ﺄ ﺄ "+"ﺇ ﺇ ﺈ ﺈ "+"ﺍ ﺍ ﺎ ﺎ "+"ﺏ ﺑ ﺒ ﺐ "+"ﺕ ﺗ ﺘ ﺖ "+"ﺙ ﺛ ﺜ ﺚ "+"ﺝ ﺟ ﺠ ﺞ "+"ﺡ ﺣ ﺤ ﺢ "+"ﺥ ﺧ ﺨ ﺦ "+
+"ﺩ ﺩ ﺪ ﺪ "+"ﺫ ﺫ ﺬ ﺬ "+"ﺭ ﺭ ﺮ ﺮ "+"ﺯ ﺯ ﺰ ﺰ "+"ﺱ ﺳ ﺴ ﺲ "+"ﺵ ﺷ ﺸ ﺶ "+"ﺹ ﺻ ﺼ ﺺ "+"ﺽ ﺿ ﻀ ﺾ "+"ﻁ ﻃ ﻄ ﻂ "+"ﻅ ﻇ ﻈ ﻆ "+
+"ﻉ ﻋ ﻌ ﻊ "+"ﻍ ﻏ ﻐ ﻎ "+"ﻑ ﻓ ﻔ ﻒ "+"ﻕ ﻗ ﻘ ﻖ "+"ﻙ ﻛ ﻜ ﻚ "+"ﻝ ﻟ ﻠ ﻞ "+"ﻡ ﻣ ﻤ ﻢ "+"ﻥ ﻧ ﻨ ﻦ "+"ﻩ ﻫ ﻬ ﻪ "+"ﻭ ﻭ ﻮ ﻮ "+
+"ﻱ ﻳ ﻴ ﻲ "+"ﺓ ﺓ ﺔ ﺔ "+"ﺅ ﺅ ﺆ ﺆ "+"ﺉ ﺋ ﺌ ﺊ "+"ﻯ ﻯ ﻰ ﻰ "+"ﭖ ﭘ ﭙ ﭗ "+"ﭺ ﭼ ﭽ ﭻ "+"ﮊ ﮊ ﮋ ﮋ "+"ﭪ ﭬ ﭭ ﭫ "+"ﮒ ﮔ ﮕ ﮓ "+
+"ﭦ ﭨ ﭩ ﭧ "+"ﮦ ﮨ ﮩ ﮧ "+"ﮮ ﮰ ﮱ ﮯ "+"ﮈ ﮈ ﮉ ﮉ "+"ﮌ ﮌ ﮍ ﮍ "+"ﯗ ﯗ ﯘ ﯘ "+"ﯙ ﯙ ﯚ ﯚ "+"ﯛ ﯛ ﯜ ﯜ "+
+"ﻵ ﻵ ﻶ ﻶ "+"ﻷ ﻷ ﻸ ﻸ "+"ﻹ ﻹ ﻺ ﻺ "+"ﻻ ﻻ ﻼ ﻼ ";      //defining arabic unicode chars (individual, start, middle, end)
+
+var arabic=
+"آ"+"أ"+"إ"+"ا"+"ب"+"ت"+"ث"+"ج"+"ح"+"خ"+
+"د"+"ذ"+"ر"+"ز"+"س"+"ش"+"ص"+"ض"+"ط"+"ظ"+
+"ع"+"غ"+"ف"+"ق"+"ك"+"ل"+"م"+"ن"+"ه"+"و"+
+"ي"+"ة"+"ؤ"+"ئ"+"ى"+"پ"+"چ"+"ژ"+"ڤ"+"گ"+
+"ٹ"+"ہ"+"ے"+"ڈ"+"ڑ"+"ۇ"+"ۆ"+"ۈ";
+var notEng=arabic+harakat+"ء،؟";        //defining all arabic letters + harakat + arabic symbols
+var brackets="(){}[]";
+
+//alert (unicode2.charAt(12))
+//alert (unicode2.charCodeAt(12))
+//alert (String.fromCharCode(64349))
+
+var msie=opera=0;    //checking which browser is in use
+var agent=navigator.userAgent;
+if (agent.indexOf("MSIE")>=0)
+  msie=1;
+if (agent.indexOf("Opera")>=0)
+  opera=1;
+//alert(navigator.userAgent);
+
+function ProcessInput()    //the processing function
+  {
+  frm=document.getElementById('writer');
+  frm.outbox.value="";
+  old="";
+  tstr="";
+  y=frm.inpbox.value;
+  x=y.split("");
+  len=x.length;
+
+  for (g=0;g<len;g++) {   //process each letter, submit it to tests and then add it to the output string
+    //ignoring the harakat
+    b=a=1;
+    while (harakat.indexOf(x[g-b])>=0)
+      b=b+1;
+    while (harakat.indexOf(x[g+a])>=0)
+      a=a+1;
+    if (g==0) { //determine the position of each letter
+      if (right.indexOf(x[a])>=0)
+        pos=2;
+      else
+        pos=0;
+    } else if (g==(len-1)) {
+      if (left.indexOf(x[len-b-1])>=0)
+        pos=6;
+      else
+        pos=0;
+    } else {
+      if (left.indexOf(x[(g-b)])<0) {
+        if (right.indexOf(x[(g+a)])<0)
+          pos=0;
+        else
+          pos=2;
+      } else if (left.indexOf(x[(g-b)])>=0) {
+        if (right.indexOf(x[(g+a)])>=0)
+          pos=4;
+        else
+          pos=6;
+      }
+    }
+
+    if (x[g]=="\n") {     //if new line occurs, save old data in a temp, process new data, then regroup
+      frm=document.getElementById('writer');
+      old=old+frm.outbox.value+"\n";
+      frm.outbox.value="";
+    } else if (x[g]=="\r") { //if this char is carriage return, skip it.
+    } else if (x[g]=="ء")
+      addChar("ﺀ");
+    else if (brackets.indexOf(x[g])>=0) {  //if this char is a bracket, reverse it
+      asd=brackets.indexOf(x[g]);
+      if ((asd%2)==0)
+        addChar(brackets.charAt(asd+1));
+      else
+        addChar(brackets.charAt(asd-1));
+    }
+    else if (arabic.indexOf(x[g])>=0) {  //if the char is an Arabic letter.. convert it to Unicode
+      if (x[g]=="ل") {  //if this letter is (laam)
+        //check if its actually a (laa) combination
+        ar_pos=arabic.indexOf(x[g+1]);
+        //alert(ar_pos)
+        if ((ar_pos>=0)&&(ar_pos<4))
+          {
+          //alert(((ar_pos*8)+pos+laIndex))
+          addChar(unicode.charAt((ar_pos*8)+pos+laIndex))
+          g=g+1;
+          }
+        else  //if its just (laam)
+          addChar(unicode.charAt((arabic.indexOf(x[g])*8)+pos));
+        }
+      else  //if its any arabic letter other than (laam)
+        addChar(unicode.charAt((arabic.indexOf(x[g])*8)+pos));
+    } else if (symbols.indexOf(x[g])>=0) {  //if the char is a symbol, add it
+      addChar(x[g]);
+    } else if (harakat.indexOf(x[g])>=0) {  //if the char is a haraka, and harakat are enabled, add it
+      if (e_harakat==1)
+        addChar(x[g]);
+    } else if (unicode.indexOf(x[g])>=0) {  //if the char is an arabic reversed letter, reverse it back!
+      uni_pos=unicode.indexOf(x[g]);
+      la_pos=unicode.indexOf(x[g]);
+      if (la_pos>=laIndex) {     //if its a laa combination
+        for (temp=8;temp<40;temp+=8) {  //find which laa
+          if (la_pos<(temp+laIndex)) {
+            addChar(arabic.charAt((temp/8)-1));
+            addChar("ل");
+            temp=60;
+          }
+        }
+	  } else { //if its any other letter
+        for (temp=8;temp<(laIndex+32);temp+=8) {
+          if (uni_pos<temp) {
+            addChar(arabic.charAt((temp/8)-1));
+            temp=1000;
+          }
+        }
+      }
+	} else {  //if the char is none of the above, then treat it as english text (don't reverse) (english chars + numbers + symbols (as is))
+      h=g;
+      frm=document.getElementById('writer');
+      while ((notEng.indexOf(x[h])<0)&&(unicode.indexOf(x[h])<0)&&(brackets.indexOf(x[h])<0)&&(x[h]!=undefined)) {   //if this is an english sentence, or numbers, put it all in one string
+        for (var key in numbers) {
+          if (numbers.hasOwnProperty(key)) {
+            mynumb = numbers[key].indexOf(x[h]);
+            if (mynumb>=0) {
+              x[h]=numbers[defNumbs].charAt(mynumb);
+            }
+          }
+        }
+        tstr=tstr+x[h];
+        h=h+1;
+        if ((msie==1)||(opera==1))  //solving a ie/opera difference in javascript
+          {temp=h+1;}
+        else
+          {temp=h;}
+        if (x[temp]=="\n")
+          break;
+        }
+      xstr=tstr.split("");
+      r=xstr.length-1;
+      if ((r==1)&&(xstr[1]==" ")) {    //make sure spaces between arabic and english text display properly
+        tstr=" "+xstr[0];
+      } else {
+        while (xstr[r]==" ") {
+          tstr=" "+tstr.substring(0,(tstr.length-1));
+          r=r-1;
+        }
+      }
+      frm.outbox.value=tstr+frm.outbox.value;    //put together the arabic text + the new english text
+      tstr="";
+      g=h-1;    //set the loop pointer to the first char after the english text.
+    }
+  }
+  frm.outbox.value=old+frm.outbox.value;  //put together the old text and the last sentence
+}
+
+function addChar(chr) {  //add arabic chars (change to Unicode)
+  frm=document.getElementById('writer');
+  frm.outbox.value=chr+frm.outbox.value;
+}
+
+function addKB(chr) {    //add arabic chars from keyboard
+  frm=document.getElementById('writer');
+  mainlength=frm.inpbox.value.length;
+  if ((chr=='لا')||(chr=='لإ')||(chr=='لأ')||(chr=='لآ'))
+    csr2=csr2+1;
+  frm.inpbox.value=frm.inpbox.value.substring(0,csr1)+chr+frm.inpbox.value.substring(csr2,mainlength);
+  csr1=csr1+chr.length;
+  csr2=csr1;
+}
+
+function remKB() {    //remove char from keyboard
+  frm=document.getElementById('writer');
+  mainlength=frm.inpbox.value.length;
+  frm.inpbox.value=frm.inpbox.value.substring(0,csr1-1)+frm.inpbox.value.substring(csr2,mainlength);
+  if (csr1>0)
+    {csr1=csr1-1;}
+  csr2=csr1;
+}
+
+function update(o) {
+  csr1 = getSelectionStart(o);
+  csr2 = getSelectionEnd(o);
+  //document.getElementById('cursorPos').firstChild.nodeValue = csr1
+  return true
+}
+
+function getSelectionStart(o) {
+  if (o.createTextRange) {
+    var r = document.selection.createRange().duplicate()
+    r.moveEnd('character', o.value.length)
+    if (r.text == '') return o.value.length
+    return o.value.lastIndexOf(r.text)
+  } else {
+    return o.selectionStart
+  }
+}
+
+function getSelectionEnd(o) {
+  if (o.createTextRange) {
+    var r = document.selection.createRange().duplicate()
+    r.moveStart('character', -o.value.length)
+    return r.text.length
+  } else {
+    return o.selectionEnd
+  }
+}
+
+function selectit() {    //a function to select the text in the output box
+  output=document.getElementById('outbox');
+  output.focus();
+  output.select();
+}
+
+function setNumbers(lang) {   //switching Arabic Numbers on and off
+  defNumbs = lang;
+  outputNumbers = numbers[lang];
+  setValue("xnumbers",numbs);
+  hide("numbers");
+}
+
+function switch_harakat() {
+  if (e_harakat==1) {
+    e_harakat=0;
+    setValue("xharakat",hars0);
+  } else {
+    e_harakat=1;
+    setValue("xharakat",hars1);
+  }
+}
+
+function switch_dir() {
+  if (dir=="rtl") {
+    dir="ltr";
+    setValue("xdir", dir0);
+  } else {
+    dir="rtl";
+    setValue("xdir", dir1);
+  }
+  setDir("inpbox", dir);
+  setDir("outbox", dir);
+}
+
+function copyclip(data) {window.clipboardData.setData('text',data);} //a function to copy the resulting text in the output box
+
+function show(item) {document.getElementById(item).style.display="block";}   //a function to show an item
+
+function hide(item) {document.getElementById(item).style.display="none";}   //a function to show an item
+
+function setDir(item,value) {document.getElementById(item).dir=value;}  //a function to change the item's name, used to change the language of the interface
+
+function setValue(item,value) {document.getElementById(item).value=value;} //a function to change the item's name, used to change the language of the interface
+
+function setHTML(item,value) {document.getElementById(item).innerHTML=value;} //a function to change the contents of an item, used to change the language of some divs
+
+function setLang(langid) {    //a function to change the language of the interface
+  defLang=langid;
+  //hide all About windows, to determine which one to show now.
+  hide("arAbout");
+  hide("faAbout");
+  hide("enAbout");
+  if (langid=="ar") {  //adding Arabic Language UI variables
+    numbs="الارقام";
+    hars0="الحركات غير مفعلة";
+    hars1="الحركات مفعلة";
+    dir0="اتجاه النص: من اليسار الى اليمين";
+    dir1="اتجاه النص: من اليمين الى اليسار";
+    setHTML("box1info","النص الاصلي");
+    setHTML("box2info","النص الناتج");
+    setValue("aboutpop","عن البرنامج");
+    setValue("languagepop"," اللغة ");
+    setValue("keyboardpop","لوحة المفاتيح العربية");
+    setValue("kspace","مسافة");
+    setValue("ktab","فاصلة");
+    setValue("kbspace","تراجع");
+    setValue("deletetxt","حذف النص");
+    setValue("selecttxt","تظليل النص المعالج");
+    setValue("processtxt","معالجة النص");
+    show("arAbout");
+  } else if (langid=="en") {  //adding English Language UI variables
+    numbs="Numbers";
+    hars0="Arabic Harakat Disabled";
+    hars1="Arabic Harakat Enabled";
+    dir0="Direction: Left To Right";
+    dir1="Direction: Right To Left";
+    setHTML("box1info","Input");
+    setHTML("box2info","Output");
+    setValue("aboutpop","About");
+    setValue("languagepop","Language");
+    setValue("keyboardpop","Arabic Keyboard");
+    setValue("kspace","Space");
+    setValue("ktab","Tab");
+    setValue("kbspace","BackSpace");
+    setValue("deletetxt","Clear Fields");
+    setValue("selecttxt","Select Output");
+    setValue("processtxt","Process Input");
+    show("enAbout");
+  } else if (langid=="fa") {  //adding Persian Language UI variables
+    numbs="اعداد";
+    hars0="اعراب غیرفعال";
+    hars1="اعراب فعال";
+    dir0="جهت: چپ به راست";
+    dir1="جهت: راست به چپ";
+    setHTML("box1info","متن خود را در این قسمت بنویسید");
+    setHTML("box2info","پس از پایان نوشتن, روی دکمه‌ی «پردازش» کلیک کنید, سپس متن خروجی را از این قسمت بردارید");
+    setValue("aboutpop","درباره");
+    setValue("languagepop","زبان");
+    setValue("keyboardpop","صفحه‌کلید عربی");
+    setValue("kspace","فاصله");
+    setValue("ktab","Tab");
+    setValue("kbspace","BackSpace");
+    setValue("deletetxt","خالی‌کردن فیلدها");
+    setValue("selecttxt","انتخاب خروجی");
+    setValue("processtxt","پردازش");
+    show("faAbout");
+  }
+  //add new language here!, copy paste the English part (20 lines above this one), and then edit it.
+  setNumbers(langid);
+  switch_harakat();switch_harakat();
+  switch_dir();switch_dir();
+  hide("lang");
+}
+-->
+</script>
+  <style type="text/css">
+  body {background-color: #f4f4f4;}  
+  .big {font-weight: bold;}
+  .kbrow {padding: 3px 0;}
+  .flat {
+    color: #444444;
+    background-color: #E1E1E1;
+    border-style: none;
+    width: 5.8%;
+    height: 40px;
+  }
+  .flat:hover, .flat:active {background-color: #D1D1D1}
+  .close {
+    width: 5%;
+    top: 3px;
+    right: 3px;
+    height: 26px;
+    position: absolute;
+  }
+  .btn10 {width: 2.8%;}
+  .btn22 {width: 3.6%;}
+  .btn24 {width: 4%;}
+  .btn26 {width: 4.6%;}
+  .btn28 {width: 5.4%;}
+  .btn32 {width: 6.7%;}
+  .btn50 {width: 8.1%;}
+  .btn100 {width: 15.2%;}
+  .btn150 {width: 22.5%;}
+  .btn200 {width: 29.7%;}
+  .inpbox, .outbox {
+    border:1px solid #c3c3c3;
+    width: 99%;
+    padding: 4px;
+    height: 400px;
+    background-color: #ffffff;
+    color: #000000;
+  }
+  table, textarea, input, div, p, ul {
+    font-family: Arial;
+    font-size: 100%;
+    font-weight: normal;
+  }
+  table {width: 100%;}
+  textarea {resize: none;}
+  input {cursor: hand; cursor: pointer;}
+  #box1info, #box2info {text-align: center;}
+  .en {direction: ltr; text-align: left}
+  .ar {direction: rtl; text-align: right}
+  .fa {direction: rtl; text-align: right}
+  .center {
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+  }
+  tr {
+    vertical-align: top;
+    text-align: justify;
+  }
+  .window {
+    right:1%;
+    left:1%;
+    border:2px solid #aaa;
+    padding:30px;
+    position:fixed;
+    background-color:#f8f8f8;
+    display:none;
+  }
+  .about {top: 2%; bottom: 2%;}
+  .lang {top: 2%}
+  .about > .ar, .about > .fa, .about > .en {height: 100%; font-size: 80%; overflow: auto;}
+  .keyboard {bottom:2%;}
+  p, ul {margin: 5px;}
+  ul {padding: 0 15px 0 15px;}
+  @media (max-width: 600px) { body {font-size: 0.7rem;} }
+  @media (min-width: 600px) { body {font-size: 0.7rem;} }
+  @media (min-width: 800px) { body {font-size: 1.0rem;} }
+  @media (min-width: 1000px) { body {font-size: 1.25rem;} }
+  @media (min-width: 1200px) { body {font-size: 1.5rem;} }
+  </style>
+</head>
+<body onload="setLang(defLang);">  <!-- after page is loaded, apply the default language -->
+  <form name="writer" id="writer" action="#" class="center">
+    <table>
+      <tr>
+        <td>
+          <div id="box2info"></div>
+          <!-- Output Box -->
+          <textarea name="outbox" id="outbox" class="outbox" rows="9" cols="50" readonly
+            placeholder="؟ﻲﺑﺮﻌﻟﺍ ﺐﺗﺎﻜﻟﺍ ﻮﻫ ﺎﻣ
+.ﻢﻴﻤﺼﺘﻟﺍ ﺞﻣﺍﺮﺑ ﻦﻣ ﻩﺮﻴﻏﻭ Photoshop Adobe ﺞﻣﺎﻧﺮﺒﻛ ﺔﻴﺑﺮﻌﻟﺍ ﺔﻐﻠﻟﺍ ﻢﻋﺪﺗ ﻻ ﻲﺘﻟﺍ ﺞﻣﺍﺮﺒﻟﺎﺑ ﺔﺑﺎﺘﻜﻟﺍ ﻲﻓ ﺏﺮﻌﻟﺍ ﻦﻴﻤﻤﺼﻤﻟﺍ ﺪﻋﺎﺴﻳ ﻲﻜﻟ ﻢﻤﺻ ﺞﻣﺎﻧﺮﺑ ﻮﻫ ﻲﺑﺮﻌﻟﺍ ﺐﺗﺎﻜﻟﺍ
+
+؟ﻲﺑﺮﻌﻟﺍ ﺐﺗﺎﻜﻟﺍ ﻞﻤﻌﻳ ﻒﻴﻛ
+..ﺔﻴﺑﺮﻌﻟﺍ ﻢﻋﺪﻳ ﻻ ﻱﺬﻟﺍ ﺞﻣﺎﻧﺮﺒﻟﺍ ﻰﻟﺍ ﺞﺗﺎﻨﻟﺍ ﺺﻨﻟﺍ ﺦﺴﻧﺍ ﻢﺛ (Input Process) ﻭﺍ (ﺺﻨﻟﺍ ﺔﺠﻟﺎﻌﻣ) ﺭﺯ ﻰﻠﻋ ﻂﻐﺿﺍ ﻢﺛ ،ﻕﻭﺪﻨﺼﻟﺍ ﺍﺬﻫ ﻲﻓ ﻲﺑﺮﻌﻟﺍ ﺺﻨﻟﺍ ﺐﺘﻛﺍ"
+            ></textarea>
+        </td>
+        <td>
+        </td>
+        <td>
+          <div id="box1info"></div>
+          <!-- Input Box -->
+          <textarea name="inpbox" id="inpbox" class="inpbox" rows="9" cols="50"
+            onclick="return(update(this))" onkeyup="return(update(this))"
+            onkeydown="return(update(this))" onkeypress="return(update(this))"
+            onmouseup="return(update(this))" onmousedown="return(update(this))"
+            placeholder="ما هو الكاتب العربي؟
+الكاتب العربي هو برنامج صمم لكي يساعد المصممين العرب في الكتابة بالبرامج التي لا تدعم اللغة العربية كبرنامج Adobe Photoshop وغيره من برامج التصميم.
+
+كيف يعمل الكاتب العربي؟
+اكتب النص العربي في هذا الصندوق، ثم اضغط على زر (معالجة النص) او (Process Input) ثم انسخ النص الناتج الى البرنامج الذي لا يدعم العربية.."
+            ></textarea>
+        </td>
+      </tr>
+    </table>
+    <br />
+
+    <!-- Start Control Buttons -->
+    <div class="kbrow">
+      <input id="deletetxt" type="reset" value=" " class="flat btn200" />
+      <input id="selecttxt" onclick="selectit();" type="button" value=" " class="flat btn200" />
+      <input id="processtxt" onclick="ProcessInput();" type="button" value=" " class="flat btn200" />
+    </div>
+    <div class="kbrow">
+      <input id="xnumbers" onclick="show('numbers');" type="button" value=" " class="flat btn200" />
+      <input id="languagepop" onclick="show('lang');" type="button" value=" " class="flat btn200" />
+      <input id="xharakat" onclick="switch_harakat();" type="button" value=" " class="flat btn200" />
+    </div>
+    <div class="kbrow">
+      <input id="aboutpop" onclick="show('about');" type="button" value=" " class="flat btn200" />
+      <input id="keyboardpop" onclick="show('keyboard');" type="button" value=" " class="flat btn200" />
+      <input id="xdir" onclick="switch_dir();" type="button" value=" " class="flat btn200" />
+    </div>
+    <!-- End Control Buttons -->
+
+    <!-- Start Language Window-->
+    <div id="lang" class="window center lang ar">
+      <input onclick="hide('lang');" type="button" value="X" class="flat close" />
+      <input onclick="setLang('ar');" type="button" value="العربية" class="flat btn100" />
+      <input onclick="setLang('fa');" type="button" value="فارسي" class="flat btn100" />
+      <input onclick="setLang('en');" type="button" value="English" class="flat btn100" />
+    </div>
+    <div id="numbers" class="window center lang ar">
+      <input onclick="hide('numbers');" type="button" value="X" class="flat close" />
+      <input onclick="setNumbers('ar');" type="button" value="العربية" class="flat btn100" />
+      <input onclick="setNumbers('fa');" type="button" value="فارسي" class="flat btn100" />
+      <input onclick="setNumbers('en');" type="button" value="English" class="flat btn100" />
+    </div>
+    <!-- End Language Window-->
+
+    <!-- Start Arabic Keyboard Window-->
+    <div id="keyboard" class="keyboard window center ar">
+      <input onclick="hide('keyboard');" type="button" value="X" class="flat close" />
+      <div class="kbrow">
+        <input id="kbspace" onclick="remKB();" type="button" value="Backspace" class="flat btn100" />
+        <input onclick="addKB('+');" type="button" value="+" class="flat" />
+        <input onclick="addKB('-');" type="button" value="-" class="flat" />
+        <input onclick="addKB('0');" type="button" value="٠" class="flat" />
+        <input onclick="addKB('9');" type="button" value="٩" class="flat" />
+        <input onclick="addKB('8');" type="button" value="٨" class="flat" />
+        <input onclick="addKB('7');" type="button" value="٧" class="flat" />
+        <input onclick="addKB('6');" type="button" value="٦" class="flat" />
+        <input onclick="addKB('5');" type="button" value="٥" class="flat" />
+        <input onclick="addKB('4');" type="button" value="٤" class="flat" />
+        <input onclick="addKB('3');" type="button" value="٣" class="flat" />
+        <input onclick="addKB('2');" type="button" value="٢" class="flat" />
+        <input onclick="addKB('1');" type="button" value="١" class="flat" />
+        <input onclick="addKB('ذ');" type="button" value="ذ" class="flat" />
+      </div>
+      <div class="kbrow">
+        <input onclick="addKB('\\');" type="button" value="\" class="flat btn24" />
+        <input onclick="addKB('|');" type="button" value="|" class="flat btn24" />
+        <input onclick="addKB('؛');" type="button" value="؛" class="flat btn24" />
+        <input onclick="addKB('د');" type="button" value="د" class="flat" />
+        <input onclick="addKB('ج');" type="button" value="ج" class="flat" />
+        <input onclick="addKB('ح');" type="button" value="ح" class="flat" />
+        <input onclick="addKB('خ');" type="button" value="خ" class="flat" />
+        <input onclick="addKB('ه');" type="button" value="هـ" class="flat" />
+        <input onclick="addKB('ع');" type="button" value="ع" class="flat" />
+        <input onclick="addKB('غ');" type="button" value="غ" class="flat" />
+        <input onclick="addKB('ف');" type="button" value="ف" class="flat" />
+        <input onclick="addKB('ق');" type="button" value="ق" class="flat" />
+        <input onclick="addKB('ث');" type="button" value="ث" class="flat" />
+        <input onclick="addKB('ص');" type="button" value="ص" class="flat" />
+        <input onclick="addKB('ض');" type="button" value="ض" class="flat" />
+        <input id="ktab" onclick="addKB('  ');" type="button" value=" " class="flat btn50" />
+      </div>
+      <div class="kbrow">
+        <input onclick="addKB('\n');" type="button" value="↲" class="flat btn28" />
+        <input onclick="addKB(':');" type="button" value=":" class="flat btn24" />
+        <input onclick="addKB('/');" type="button" value="/" class="flat btn24" />
+        <input onclick="addKB('،');" type="button" value="،" class="flat btn24" />
+        <input onclick="addKB('ط');" type="button" value="ط" class="flat" />
+        <input onclick="addKB('ك');" type="button" value="ك" class="flat" />
+        <input onclick="addKB('م');" type="button" value="م" class="flat" />
+        <input onclick="addKB('ن');" type="button" value="ن" class="flat" />
+        <input onclick="addKB('ت');" type="button" value="ت" class="flat" />
+        <input onclick="addKB('ا');" type="button" value="ا" class="flat" />
+        <input onclick="addKB('ل');" type="button" value="ل" class="flat" />
+        <input onclick="addKB('ب');" type="button" value="ب" class="flat" />
+        <input onclick="addKB('ي');" type="button" value="ي" class="flat" />
+        <input onclick="addKB('س');" type="button" value="س" class="flat" />
+        <input onclick="addKB('ش');" type="button" value="ش" class="flat" />
+        <input onclick="addKB('[');" type="button" value="[" class="flat btn24" />
+        <input onclick="addKB(']');" type="button" value="]" class="flat btn24" />
+      </div>
+      <div class="kbrow">
+        <input onclick="addKB('؟');" type="button" value="؟" class="flat btn26" />
+        <input onclick="addKB('&rdquo;');" type="button" value='"' class="flat btn24" />
+        <input onclick="addKB('.');" type="button" value="." class="flat btn24" />
+        <input onclick="addKB(',');" type="button" value="," class="flat btn24" />
+        <input onclick="addKB('’');" type="button" value="’" class="flat btn24" />
+        <input onclick="addKB('ظ');" type="button" value="ظ" class="flat" />
+        <input onclick="addKB('ز');" type="button" value="ز" class="flat" />
+        <input onclick="addKB('و');" type="button" value="و" class="flat" />
+        <input onclick="addKB('ة');" type="button" value="ة" class="flat" />
+        <input onclick="addKB('ى');" type="button" value="ى" class="flat" />
+        <input onclick="addKB('لا');" type="button" value="لا" class="flat" />
+        <input onclick="addKB('ر');" type="button" value="ر" class="flat" />
+        <input onclick="addKB('ؤ');" type="button" value="ؤ" class="flat" />
+        <input onclick="addKB('ء');" type="button" value="ء" class="flat" />
+        <input onclick="addKB('ئ');" type="button" value="ئـ" class="flat" />
+        <input onclick="addKB('{');" type="button" value="{" class="flat btn28" />
+        <input onclick="addKB('}');" type="button" value="}" class="flat btn28" />
+      </div>
+      <div class="kbrow">
+        <input onclick="addKB('‍پ');" type="button" value="پ" class="flat" />
+        <input onclick="addKB('چ');" type="button" value="چ" class="flat" />
+        <input onclick="addKB('ژ');" type="button" value="ژ" class="flat" />
+        <input onclick="addKB('ڤ');" type="button" value="ڤ" class="flat" />
+        <input onclick="addKB('گ');" type="button" value="گ" class="flat" />
+        <input onclick="addKB('‍ٹ');" type="button" value="ٹ" class="flat" />
+        <input onclick="addKB('ہ');" type="button" value="ہ" class="flat" />
+        <input onclick="addKB('ے');" type="button" value="ے" class="flat" />
+        <input onclick="addKB('ڈ');" type="button" value="ڈ" class="flat" />
+        <input onclick="addKB('ڑ');" type="button" value="ڑ" class="flat" />
+        <input onclick="addKB('ۇ');" type="button" value="ۇ" class="flat" />
+        <input onclick="addKB('ۆ');" type="button" value="ۆ" class="flat" />
+        <input onclick="addKB('ۈ');" type="button" value="ۈ" class="flat" />
+        <input onclick="addKB('ـ');" type="button" value="ــ" class="flat btn22" />
+        <input onclick="addKB('<');" type="button" value="<" class="flat btn28" />
+        <input onclick="addKB('>');" type="button" value=">" class="flat btn28" />
+      </div>
+      <div class="kbrow">
+        <input onclick="addKB('لا');" type="button" value="لا" class="flat" />
+        <input onclick="addKB('أ');" type="button" value="أ" class="flat" />
+        <input onclick="addKB('لأ');" type="button" value="لأ" class="flat" />
+        <input onclick="addKB('إ');" type="button" value="إ" class="flat" />
+        <input onclick="addKB('لإ');" type="button" value="لإ" class="flat" />
+        <input onclick="addKB('آ');" type="button" value="آ" class="flat" />
+        <input onclick="addKB('لآ');" type="button" value="لآ" class="flat" />
+        <input onclick="addKB('ُ');" type="button" value="  ُ " class="flat btn28" />
+        <input onclick="addKB('ٌ');" type="button" value="  ٌ " class="flat btn28" />
+        <input onclick="addKB('َ');" type="button" value="  َ " class="flat btn28" />
+        <input onclick="addKB('ً');" type="button" value="  ً " class="flat btn28" />
+        <input onclick="addKB('ِ');" type="button" value="  ِ " class="flat btn28" />
+        <input onclick="addKB('ٍ');" type="button" value="  ٍ " class="flat btn28" />
+        <input onclick="addKB('ّ');" type="button" value="  ّ " class="flat btn28" />
+        <input onclick="addKB('ْ');" type="button" value="  ْ " class="flat btn28" />
+        <input onclick="addKB('~');" type="button" value="~" class="flat" />
+      </div>
+      <div class="kbrow">
+        <input onclick="addKB('×');" type="button" value="×" class="flat btn24" />
+        <input onclick="addKB('÷');" type="button" value="÷" class="flat btn24" />
+        <input onclick="addKB('‘');" type="button" value="‘" class="flat btn24" />
+        <input onclick="addKB('=');" type="button" value="=" class="flat btn24" />
+        <input onclick="addKB('_');" type="button" value="_" class="flat btn24" />
+        <input onclick="addKB('(');" type="button" value="(" class="flat btn24" />
+        <input onclick="addKB(')');" type="button" value=")" class="flat btn24" />
+        <input onclick="addKB('*');" type="button" value="*" class="flat btn24" />
+        <input id="kspace" onclick="addKB(' ');" type="button" value=" " class="flat btn200" />
+        <input onclick="addKB('&amp;');" type="button" value="&amp;" class="flat btn24" />
+        <input onclick="addKB('^');" type="button" value="^" class="flat btn24" />
+        <input onclick="addKB('%');" type="button" value="%" class="flat btn24" />
+        <input onclick="addKB('$');" type="button" value="$" class="flat btn24" />
+        <input onclick="addKB('#');" type="button" value="#" class="flat btn24" />
+        <input onclick="addKB('@');" type="button" value="@" class="flat btn24" />
+        <input onclick="addKB('!');" type="button" value="!" class="flat btn24" />
+      </div>
+    </div>
+    <!-- End Arabic Keyboard Window-->
+
+    <!-- Start All About-->
+    <div id="about" class="window about" style="display:none; z-index:100000;">
+      <input onclick="hide('about');" type="button" value="X" class="flat close" />
+      <!-- Start Arabic About-->
+      <div id="arAbout" class="ar">
+        <p class="big">برنامج الكاتب العربي - الاصدار (1.4.4)</p>
+        <table>
+          <tr>
+            <td style="width: 35%;">
+              <b>ما هو الكاتب العربي؟</b>
+              <p>
+              الكاتب العربي هو برنامج صمم لكي يساعد المصممين العرب في الكتابة بالبرامج التي لا تدعم اللغة العربية كبرنامج Adobe Photoshop وغيره من برامج التصميم.
+              </p>
+              <br />
+              <b>كيف يعمل الكاتب العربي؟</b>
+              <p>
+              صحيح ان بعض البرامج لا تدعم اللغة العربية، ولكن اغلب البرامج تدعم اليونيكود Unicode
+              وهو نظام حرفي يجمع كل حروف اللغات المختلفة ويدعمها جميعا.. 
+              لكنه كما في اغلب اللغات الاجنبية، يكتب من اليسار الى اليمين.. لذلك تجد برنامج الفوتوشوب مثلا يكتب الكلمات بالمقلوب.
+              اذا فكل ما نحتاجه هو برنامج يعيد ترتيب الحروف التي ندخلها بحيث تظهر بصورة صحيحة داخل البرامج، وهذا هو بالضبط ما يفعله الكاتب العربي.
+              </p>
+              <br />
+            </td>
+            <td>
+              <b>ما هي مميزات الكاتب العربي؟</b>
+              <ul>
+                <li>.يتميز الكاتب العربي بكونه مجاني ومتاح للجميع استخدامه والتعديل عليه اذا شعروا بالحاجة لذلك.</li>
+                <li>يتميز بانه لا يحتاج الى مجموعة خطوط لدعمه (كما في بعض البرامج المشابهة).. كل ما يلزم هو برنامج يدعم اليونيكود .. وذلك لأن اغلب انظمة التشغيل تحتوي على خطوط تدعم اليونيكود مثل خط الـ Arial الشهير وغيره.</li>
+                <li>يدعم تعدد لغات الواجهة والحروف الانكليزية والرموز والاقواس والارقام العربية والانجليزية والاسطر المتعددة وحرف لا .. إلخ.</li>
+                <li>يدعم هذا البرنامج ارجاع النص الناتج الى اصله اذا تم معالجته مرة ثانية بنفس الطريقة..</li>
+                <li>يتميز البرنامج عن غيره بسهولة تعديله من دون الحاجة الى اعادة بناءه.. حيث يمكن تعديل البرنامح كاملا من خلال تعديل ملف الـ HTML المرافق له. </li>
+                <li>يتميز الكاتب العربي عن غيره بقابلية اظهار لوحة مفاتيح عربية وذلك لدعم الانظمة التي لا تدعم العربية بالمرة.</li>
+                <li>كما يتميز البرنامج بحجمه الصغير جدا (67 كيلو بايت) وهو برنامج ممكن حمله (portable) يمكنك ان تاخذه معك على الفلاش دسك. </li>
+                <li>يمكن تشغيل البرنامج بطريقتين، إما عن طريق تشغيل ملف الـ exe (يتطلب Windows + .NET Framework 2 or higher) او من خلال فتح صفحة الـ HTML المرافقة للبرنامج في اي متصفح انترنت. وبهذه الطريقة يمكن تشغيل هذا البرنامج على اي نظام تشغيل يحتوي على متصفح انترنت (مثل Linux و Mac و Android وغيرها من انظمة التشغيل) لذلك يمكن اعتباره برنامج (Cross-Platform).</li>
+              </ul>
+            </td>
+          </tr>
+        </table>
+        <div class='big'>نبذة عن المؤلف:</div>
+        <ul>
+          <li>الاسم: عمر محمد وعد الله الخشاب</li>
+          <li>المهنة: برمجة وتصميم مواقع انترنت</li>
+          <li>الجنسية: عراقي</li>
+          <li>الموقع الالكتروني: <a target="_blank" href="http://omar84.com">http://omar84.com</a></li>
+          <li>البريد الالكتروني: admin@omar84.com</li>
+        </ul>
+      </div>
+      <!-- End arabic about-->
+
+      <!-- Start English about-->
+      <div id="enAbout" class="en">
+        <p class="big">Arabic Writer - Version (1.4.4)</p>
+        <table>
+          <tr>
+            <td style="width: 35%;">
+              <b>What is the Arabic Writer?</b>
+              <p>
+              The Arabic Writer is a program designed to help Arab Designers to work with Programs that doesn't support Arabic language characters, such as Adobe Photoshop.
+              </p>
+              <br />
+              <b>How does the Arabic Writer work?</b>
+              <p>
+              While some programs doesn't support Arabic, almost all programs support Unicode, which is a universal charset that includes almost every character of every language.
+              But, as in most western languages, its left-to-right oriented, that's why when you try to type Arabic letters in Photoshop, it appears like you are writing backwards.
+              so, all we need is a program that re-arranges the Arabic letters in Unicode. that's exactly what the Arabic Writer does.
+              </p>
+              <br />
+            </td>
+            <td>
+            </td>
+            <td>            
+              <b>What are the advantages of the Arabic Writer?</b>
+              <ul>
+                <li>The Arabic Writer is totally free, and available for everyone to use or edit if needed.</li>
+                <li>It doesn't need a pack of special fonts (as in some similar programs), that's because most of the Operating Systems out there have fonts that support unicode like the Arial font for example.</li>
+                <li>It supports Multiple User-Interface Lanaguages, English Letters, Symbols, Parenthesis, Arabic and English numbers, The use of multiple lines and the special (Laa) character.</li>
+                <li>It can convert back the generated text to its origin if it was processed again in the same manner.</li>
+                <li>Its very easy to edit the program by simply editing the HTML file, no need to recompile the code.</li>
+                <li>It has an on-screen Arabic Keyboard to support systems that doesn't support the Arabic language at all.</li>
+                <li>Its portable, and its very small in size (67 kbs).</li>
+                <li>It can be run either from the exe file (Requires Windows + .NET Framework 2 or higher), or by simply running the HTML file in any browser under any Operating System (Linux, MAC, Android ..etc) which makes it (Cross-Platform).</li>
+              </ul>
+            </td>
+          </tr>
+        </table>
+        <div class="big">About the Author:</div>
+        <ul>
+          <li>Name: Omar Muhammad Al-Khashab</li>
+          <li>Occupation: Web Developer/Designer</li>
+          <li>Nationality: Iraqi</li>
+          <li>Website: <a target="_blank" href="http://omar84.com">http://omar84.com</a></li>
+          <li>E-mail: admin@omar84.com</li>
+        </ul>
+      </div>
+      <!-- End English About-->
+
+      <!-- Start Persian about-->
+      <div id="faAbout" class="fa">
+        <p class='big'>اطلاعات برنامه:</p>
+        <table>
+          <tr valign='top'>
+            <td width='36%'>
+              <b>عربی نویس چیست؟</b>
+              <p align='justify'>
+              این برنامه برای فارسی و عرب زبانانی است که می‌خواهند متن فارسی یا عربی خود را در برنامه‌های گرافیکی مانند فتوشاپ وارد کنند.
+              </p>
+              <br />
+              <b>عربی نویس چگونه کار می‌کند؟</b>
+              <p align='justify'>
+              نوشتن متن‌های فارسی و عربی در برخی از برنامه‌ها ممکن نیست, با این حال بیشتر نرم‌افزارها از یونیکد پشتیبانی می‌کنند.
+              با توجه به اینکه بیشتر زبان‌های غربی از چپ به راست نوشته می‌شوند، هنگام تایپ فارسی در این‌گونه نرم‌افزارها به نظر می‌رسد که متن را معکوس نوشته‌اید.
+              با این حساب به برنامه‌ای نیاز داریم که تبدیل به یونیکد و معکوس کردن متن را همزمان انجام دهد.
+              </p>
+              <br />
+            </td>
+            <td>
+              <b>مزیت‌های عربی نویس چیست؟</b>
+              <ul align='justify'>
+                <li>عربی نویس کاملا رایگان است و هر کسی می‌تواند بنابر نیاز آن را تغییر دهد.</li>
+                <li>به فونت خاصی نیاز ندارد.</li>
+                <li>زبان‌های مختلف را پشتیبانی می‌کند.</li>
+                <li>می‌تواند متن را به حالت اولیه برگرداند.</li>
+                <li>تغییر دادن برنامه با تغییر در سورس HTML بدون نیاز به کامپایل مجدد امکان‌پذیر است.</li>
+                <li>حاوی صفحه‌کلید عربی برای سیستم‌های فاقد این قابلیت است.</li>
+                <li>قابل حمل و کم‌حجم است.</li>
+                <li>قابل اجرا در سیستم‌عامل‌های مختلف است.</li>
+              </ul>
+            </td>
+          </tr>
+        </table>
+        <div class='big'>درباره‌ی نویسنده:</div>
+        <ul>
+          <li>نام: عمر محمد الخشاب</li>
+          <li>پیشه: طراح و توسعه‌دهنده‌ی وب</li>
+          <li>ملیت: عراق</li>
+          <li>تارنما: <a target='_blank' href='http://omar84.com'>http://omar84.com</a></li>
+          <li>رایانامه: admin@omar84.com</li>
+        </ul>
+        <br />
+        <div class='big'>درباره‌ی توسعه‌دهنده به فارسی:</div>
+        <ul>
+          <li>نام: امیرمسعود ایرانی</li>
+          <li>پیشه: طراح و توسعه‌دهنده‌ی وب</li>
+          <li>ملیت: ایران</li>
+          <li>تارنما: <a target='_blank' href='http://amib.ir/weblog'>http://amib.ir/weblog</a></li>
+          <li>رایانامه: amib@amib.ir</li>
+        </ul>
+      </div>
+      <!-- End Persian About-->
+
+      <!-- Add new About Here -->
+
+      <!-- End new About Here -->
+    </div>
+    <!-- End All About-->
+    <!--<div id="cursorPos">&nbsp;</div>-->
+  </form>
+</body>
