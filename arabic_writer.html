@@ -139,17 +139,16 @@ function ProcessInput() {   //the processing function
       old=old+frm.outbox.value+"\n";
       frm.outbox.value="";
     } else if (x[g]=="\r") { //if this char is carriage return, skip it.
-    } else if (x[g]=="ء")
+    } else if (x[g]=="ء") {
       addChar("ﺀ");
-    else if (brackets.indexOf(x[g])>=0) {  //if this char is a bracket, reverse it
+    } else if (brackets.indexOf(x[g])>=0) {  //if this char is a bracket, reverse it
       asd=brackets.indexOf(x[g]);
       if ((asd%2)==0) {
         addChar(brackets.charAt(asd+1));
       } else {
         addChar(brackets.charAt(asd-1));
       }
-    }
-    else if (arabic.indexOf(x[g])>=0) {  //if the char is an Arabic letter.. convert it to Unicode
+    } else if (arabic.indexOf(x[g])>=0) {  //if the char is an Arabic letter.. convert it to Unicode
       if (x[g]=="ل") {  //if this letter is (laam)
         //check if its actually a (laa) combination
         ar_pos=arabic.indexOf(x[g+1]);
@@ -160,7 +159,7 @@ function ProcessInput() {   //the processing function
           g=g+1;
         } else { //if its just (laam)
           addChar(unicode.charAt((arabic.indexOf(x[g])*8)+pos));
-	}
+        }
       } else { //if its any arabic letter other than (laam)
         addChar(unicode.charAt((arabic.indexOf(x[g])*8)+pos));
       }
@@ -201,13 +200,15 @@ function ProcessInput() {   //the processing function
         }
         tstr=tstr+x[h];
         h=h+1;
-        if ((msie==1)||(opera==1))  //solving a ie/opera difference in javascript
-          {temp=h+1;}
-        else
-          {temp=h;}
-        if (x[temp]=="\n")
+        if ((msie==1)||(opera==1)) { //solving a ie/opera difference in javascript
+          temp=h+1;
+        } else {
+          temp=h;
+        }
+        if (x[temp]=="\n") {
           break;
         }
+      }
       xstr=tstr.split("");
       r=xstr.length-1;
       if ((r==1)&&(xstr[1]==" ")) {    //make sure spaces between arabic and english text display properly
