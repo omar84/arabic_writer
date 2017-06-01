@@ -55,10 +55,10 @@ var g;
 var old="";
 var tstr="";
 var csr1=csr2=0;    //cursor location
-var laIndex=8*48;   //position of laa characters in the unicode string
+var laaIndex=8*50;   //position of laa characters in the unicode string
 
-var left="ٹہےگڤچپـئظشسيبلتنمكطضصثقفغعهخحج";                           //defining letters that can connect from the left
-var right="ٹہےڈڑگڤژچپـئؤرلالآىآةوزظشسيبللأاأتنمكطضصثقفغعهخحجدذلإإۇۆۈ";    //defining letters that can connect from the right
+var left="یٹہےگکڤچپـئظشسيبلتنمكطضصثقفغعهخحج";                           //defining letters that can connect from the left
+var right="یٹہےڈڑگکڤژچپـئؤرلالآىآةوزظشسيبللأاأتنمكطضصثقفغعهخحجدذلإإۇۆۈ";    //defining letters that can connect from the right
 
 var harakat="ًٌٍَُِّْ";                         //defining the harakat
 var symbols="ـ.،؟ @#$%^&*-+|\/=~,:";    //defining other symbols
@@ -67,7 +67,7 @@ var unicode=
 "ﺩ ﺩ ﺪ ﺪ "+"ﺫ ﺫ ﺬ ﺬ "+"ﺭ ﺭ ﺮ ﺮ "+"ﺯ ﺯ ﺰ ﺰ "+"ﺱ ﺳ ﺴ ﺲ "+"ﺵ ﺷ ﺸ ﺶ "+"ﺹ ﺻ ﺼ ﺺ "+"ﺽ ﺿ ﻀ ﺾ "+"ﻁ ﻃ ﻄ ﻂ "+"ﻅ ﻇ ﻈ ﻆ "+
 "ﻉ ﻋ ﻌ ﻊ "+"ﻍ ﻏ ﻐ ﻎ "+"ﻑ ﻓ ﻔ ﻒ "+"ﻕ ﻗ ﻘ ﻖ "+"ﻙ ﻛ ﻜ ﻚ "+"ﻝ ﻟ ﻠ ﻞ "+"ﻡ ﻣ ﻤ ﻢ "+"ﻥ ﻧ ﻨ ﻦ "+"ﻩ ﻫ ﻬ ﻪ "+"ﻭ ﻭ ﻮ ﻮ "+
 "ﻱ ﻳ ﻴ ﻲ "+"ﺓ ﺓ ﺔ ﺔ "+"ﺅ ﺅ ﺆ ﺆ "+"ﺉ ﺋ ﺌ ﺊ "+"ﻯ ﻯ ﻰ ﻰ "+"ﭖ ﭘ ﭙ ﭗ "+"ﭺ ﭼ ﭽ ﭻ "+"ﮊ ﮊ ﮋ ﮋ "+"ﭪ ﭬ ﭭ ﭫ "+"ﮒ ﮔ ﮕ ﮓ "+
-"ﭦ ﭨ ﭩ ﭧ "+"ﮦ ﮨ ﮩ ﮧ "+"ﮮ ﮰ ﮱ ﮯ "+"ﮈ ﮈ ﮉ ﮉ "+"ﮌ ﮌ ﮍ ﮍ "+"ﯗ ﯗ ﯘ ﯘ "+"ﯙ ﯙ ﯚ ﯚ "+"ﯛ ﯛ ﯜ ﯜ "+
+"ﭦ ﭨ ﭩ ﭧ "+"ﮦ ﮨ ﮩ ﮧ "+"ﮮ ﮰ ﮱ ﮯ "+"ﯼ ﯾ ﯿ ﯽ "+"ﮈ ﮈ ﮉ ﮉ "+"ﮌ ﮌ ﮍ ﮍ "+"ﯗ ﯗ ﯘ ﯘ "+"ﯙ ﯙ ﯚ ﯚ "+"ﯛ ﯛ ﯜ ﯜ "+"ﮎ ﮐ ﮑ ﮏ "+
 "ﻵ ﻵ ﻶ ﻶ "+"ﻷ ﻷ ﻸ ﻸ "+"ﻹ ﻹ ﻺ ﻺ "+"ﻻ ﻻ ﻼ ﻼ ";      //defining arabic unicode chars (individual, start, middle, end)
 
 var arabic=
@@ -75,7 +75,7 @@ var arabic=
 "د"+"ذ"+"ر"+"ز"+"س"+"ش"+"ص"+"ض"+"ط"+"ظ"+
 "ع"+"غ"+"ف"+"ق"+"ك"+"ل"+"م"+"ن"+"ه"+"و"+
 "ي"+"ة"+"ؤ"+"ئ"+"ى"+"پ"+"چ"+"ژ"+"ڤ"+"گ"+
-"ٹ"+"ہ"+"ے"+"ڈ"+"ڑ"+"ۇ"+"ۆ"+"ۈ";
+"ٹ"+"ہ"+"ے"+"ی"+"ڈ"+"ڑ"+"ۇ"+"ۆ"+"ۈ"+"ک";
 var notEng=arabic+harakat+"ء،؟";        //defining all arabic letters + harakat + arabic symbols
 var brackets="(){}[]";
 
@@ -154,8 +154,8 @@ function ProcessInput() {   //the processing function
         ar_pos=arabic.indexOf(x[g+1]);
         //alert(ar_pos)
         if ((ar_pos>=0)&&(ar_pos<4)) {
-          //alert(((ar_pos*8)+pos+laIndex))
-          addChar(unicode.charAt((ar_pos*8)+pos+laIndex))
+          //alert(((ar_pos*8)+pos+laaIndex))
+          addChar(unicode.charAt((ar_pos*8)+pos+laaIndex))
           g=g+1;
         } else { //if its just (laam)
           addChar(unicode.charAt((arabic.indexOf(x[g])*8)+pos));
@@ -170,16 +170,16 @@ function ProcessInput() {   //the processing function
     } else if (unicode.indexOf(x[g])>=0) {  //if the char is an arabic reversed letter, reverse it back!
       uni_pos=unicode.indexOf(x[g]);
       la_pos=unicode.indexOf(x[g]);
-      if (la_pos>=laIndex) {     //if its a laa combination
+      if (la_pos>=laaIndex) {     //if its a laa combination
         for (temp=8;temp<40;temp+=8) {  //find which laa
-          if (la_pos<(temp+laIndex)) {
+          if (la_pos<(temp+laaIndex)) {
             addChar(arabic.charAt((temp/8)-1));
             addChar("ل");
             temp=60;
           }
         }
       } else { //if its any other letter
-        for (temp=8;temp<(laIndex+32);temp+=8) {
+        for (temp=8;temp<(laaIndex+32);temp+=8) {
           if (uni_pos<temp) {
             addChar(arabic.charAt((temp/8)-1));
             temp=1000;
@@ -620,20 +620,22 @@ function setLang(langid) {    //a function to change the language of the interfa
         <input onclick="addKB('}');" type="button" value="}" class="flat btn28" />
       </div>
       <div class="kbrow">
-        <input onclick="addKB('‍پ');" type="button" value="پ" class="flat" />
-        <input onclick="addKB('چ');" type="button" value="چ" class="flat" />
-        <input onclick="addKB('ژ');" type="button" value="ژ" class="flat" />
-        <input onclick="addKB('ڤ');" type="button" value="ڤ" class="flat" />
-        <input onclick="addKB('گ');" type="button" value="گ" class="flat" />
-        <input onclick="addKB('‍ٹ');" type="button" value="ٹ" class="flat" />
-        <input onclick="addKB('ہ');" type="button" value="ہ" class="flat" />
-        <input onclick="addKB('ے');" type="button" value="ے" class="flat" />
-        <input onclick="addKB('ڈ');" type="button" value="ڈ" class="flat" />
-        <input onclick="addKB('ڑ');" type="button" value="ڑ" class="flat" />
-        <input onclick="addKB('ۇ');" type="button" value="ۇ" class="flat" />
-        <input onclick="addKB('ۆ');" type="button" value="ۆ" class="flat" />
-        <input onclick="addKB('ۈ');" type="button" value="ۈ" class="flat" />
-        <input onclick="addKB('ـ');" type="button" value="ــ" class="flat btn22" />
+        <input onclick="addKB('‍پ');" type="button" value="پ" class="flat btn28" />
+        <input onclick="addKB('چ');" type="button" value="چ" class="flat btn26" />
+        <input onclick="addKB('ژ');" type="button" value="ژ" class="flat btn26" />
+        <input onclick="addKB('ڤ');" type="button" value="ڤ" class="flat btn26" />
+        <input onclick="addKB('گ');" type="button" value="گ" class="flat btn28" />
+        <input onclick="addKB('ک');" type="button" value="ک" class="flat btn28" />
+        <input onclick="addKB('ی');" type="button" value="ی" class="flat btn28" />
+        <input onclick="addKB('‍ٹ');" type="button" value="ٹ" class="flat btn26" />
+        <input onclick="addKB('ہ');" type="button" value="ہ" class="flat btn28" />
+        <input onclick="addKB('ے');" type="button" value="ے" class="flat btn28" />
+        <input onclick="addKB('ڈ');" type="button" value="ڈ" class="flat btn26" />
+        <input onclick="addKB('ڑ');" type="button" value="ڑ" class="flat btn26" />
+        <input onclick="addKB('ۇ');" type="button" value="ۇ" class="flat btn26" />
+        <input onclick="addKB('ۆ');" type="button" value="ۆ" class="flat btn26" />
+        <input onclick="addKB('ۈ');" type="button" value="ۈ" class="flat btn26" />
+        <input onclick="addKB('ـ');" type="button" value="ــ" class="flat btn24" />
         <input onclick="addKB('<');" type="button" value="<" class="flat btn28" />
         <input onclick="addKB('>');" type="button" value=">" class="flat btn28" />
       </div>
